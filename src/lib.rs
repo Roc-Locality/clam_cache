@@ -57,7 +57,7 @@ mod tests {
         let tag_id_iter = vec![
             //TaggedObjectId(Ref, ObjId)
             TaggedObjectId(1, 2), // lease 2
-            TaggedObjectId(3, 4),   //lease 1
+            TaggedObjectId(3, 4), //lease 1
             TaggedObjectId(1, 2), //lease 2
         ]
         .into_iter();
