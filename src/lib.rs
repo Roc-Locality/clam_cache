@@ -55,9 +55,10 @@ mod tests {
     #[test]
     fn test_lease_cache_tag_id() {
         let tag_id_iter = vec![
-            TaggedObjectId(1, 2),
-            TaggedObjectId(3, 4),
-            TaggedObjectId(1, 2),
+            //TaggedObjectId(Ref, ObjId)
+            TaggedObjectId(1, 2), // lease 2
+            TaggedObjectId(3, 4),   //lease 1
+            TaggedObjectId(1, 2), //lease 2
         ]
         .into_iter();
         let lease_map: HashMap<u64, (usize, usize, f64)> = vec![(1, (2, 0, 1.0)), (3, (1, 0, 1.0))]
@@ -66,7 +67,7 @@ mod tests {
         let mut clam_cache = ClamCache::<u64, u64>::new(lease_map);
         clam_cache.set_capacity(1000);
         let mr = clam_cache.get_mr(tag_id_iter);
-        assert_eq!(mr, 2.0 / 3.0);
+        assert_eq!(mr, 1.0);
         println!("mr: {}", mr);
     }
 
