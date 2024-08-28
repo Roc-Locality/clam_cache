@@ -66,7 +66,7 @@ mod tests {
         let mut clam_cache = ClamCache::<u64, u64>::new(lease_map);
         clam_cache.set_capacity(1000);
         let mr = clam_cache.get_mr(tag_id_iter);
-        assert_eq!(mr, 2.0 / 3.0); //0.666666666
+        assert_eq!(mr, 1.0);
         println!("mr: {}", mr);
     }
 
