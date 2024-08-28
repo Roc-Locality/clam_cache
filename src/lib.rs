@@ -32,7 +32,7 @@ impl<Ref: ObjIdTraits, Obj: ObjIdTraits> ClamCache<Ref, Obj> {
 }
 
 impl<Tag: ObjIdTraits, Obj: ObjIdTraits> CacheSim<TaggedObjectId<Tag, Obj>>
-for ClamCache<Tag, Obj>
+    for ClamCache<Tag, Obj>
 {
     fn cache_access(&mut self, access: TaggedObjectId<Tag, Obj>) -> abstract_cache::AccessResult {
         let TaggedObjectId(tag, obj_id) = access;
@@ -59,7 +59,7 @@ mod tests {
             TaggedObjectId(3, 4), //lease 1
             TaggedObjectId(1, 2), //lease 2
         ]
-            .into_iter();
+        .into_iter();
         let lease_map: HashMap<u64, (usize, usize, f64)> = vec![(1, (2, 0, 1.0)), (3, (1, 0, 1.0))]
             .into_iter()
             .collect();
@@ -80,7 +80,6 @@ mod tests {
     //     println!("mr: {}", mr);
     //     assert!(true);
     // }
-
 
     #[test]
     fn test_sample_lease() {
@@ -105,7 +104,8 @@ mod tests {
         let expected_short_lease = num_iters as f64 * 0.5;
         let expected_long_lease = num_iters as f64 * 0.5;
 
-        let chi_squared_stat = ((num_short_lease as f64 - expected_short_lease).powi(2) / expected_short_lease)
+        let chi_squared_stat = ((num_short_lease as f64 - expected_short_lease).powi(2)
+            / expected_short_lease)
             + ((num_long_lease as f64 - expected_long_lease).powi(2) / expected_long_lease);
 
         let chi_squared = ChiSquared::new(2.0).unwrap();
@@ -122,6 +122,10 @@ mod tests {
             num_short_lease as f64 / num_iters as f64,
             num_long_lease as f64 / num_iters as f64
         );
-        assert!(p_value > 0.05, "Chi-squared test failed with p-value: {}", p_value);
+        assert!(
+            p_value > 0.05,
+            "Chi-squared test failed with p-value: {}",
+            p_value
+        );
     }
 }
