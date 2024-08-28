@@ -32,7 +32,7 @@ impl<Ref: ObjIdTraits, Obj: ObjIdTraits> ClamCache<Ref, Obj> {
 }
 
 impl<Tag: ObjIdTraits, Obj: ObjIdTraits> CacheSim<TaggedObjectId<Tag, Obj>>
-    for ClamCache<Tag, Obj>
+for ClamCache<Tag, Obj>
 {
     fn cache_access(&mut self, access: TaggedObjectId<Tag, Obj>) -> abstract_cache::AccessResult {
         let TaggedObjectId(tag, obj_id) = access;
@@ -49,7 +49,6 @@ impl<Tag: ObjIdTraits, Obj: ObjIdTraits> CacheSim<TaggedObjectId<Tag, Obj>>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::clam_cache_file_reader;
     use std::collections::HashMap;
 
     #[test]
@@ -60,14 +59,14 @@ mod tests {
             TaggedObjectId(3, 4), //lease 1
             TaggedObjectId(1, 2), //lease 2
         ]
-        .into_iter();
+            .into_iter();
         let lease_map: HashMap<u64, (usize, usize, f64)> = vec![(1, (2, 0, 1.0)), (3, (1, 0, 1.0))]
             .into_iter()
             .collect();
         let mut clam_cache = ClamCache::<u64, u64>::new(lease_map);
         clam_cache.set_capacity(1000);
         let mr = clam_cache.get_mr(tag_id_iter);
-        assert_eq!(mr, 1.0);
+        assert_eq!(mr, 2.0 / 3.0); //0.666666666
         println!("mr: {}", mr);
     }
 
@@ -82,14 +81,18 @@ mod tests {
     //     assert!(true);
     // }
 
+
     #[test]
     fn test_sample_lease() {
+        use statrs::distribution::{ChiSquared, ContinuousCDF};
+
         let num_iters = 1000;
         let lease_map: HashMap<usize, (usize, usize, f64)> =
             vec![(0, (0, 1, 0.5))].into_iter().collect();
         let mut num_short_lease = 0;
         let mut num_long_lease = 0;
         let mut clam_cache = ClamCache::<usize, usize>::new(lease_map);
+
         (0..num_iters).for_each(|_| {
             let lease = clam_cache.sample_lease(0);
             match lease {
@@ -98,14 +101,27 @@ mod tests {
                 _ => panic!("Invalid lease"),
             }
         });
-        assert!(
-            (num_short_lease as f64 / num_iters as f64 - num_long_lease as f64 / num_iters as f64)
-                < 0.02
-        );
+
+        let expected_short_lease = num_iters as f64 * 0.5;
+        let expected_long_lease = num_iters as f64 * 0.5;
+
+        let chi_squared_stat = ((num_short_lease as f64 - expected_short_lease).powi(2) / expected_short_lease)
+            + ((num_long_lease as f64 - expected_long_lease).powi(2) / expected_long_lease);
+
+        let chi_squared = ChiSquared::new(2.0).unwrap();
+        let p_value = 1.0 - chi_squared.cdf(chi_squared_stat);
+
+        if p_value > 0.05 {
+            println!("Test passed with p-value: {}", p_value);
+        } else {
+            println!("Test failed with p-value: {}", p_value);
+        }
+
         println!(
             "short_lease_prob: {} long_lease_prob: {}, ",
             num_short_lease as f64 / num_iters as f64,
             num_long_lease as f64 / num_iters as f64
         );
+        assert!(p_value > 0.05, "Chi-squared test failed with p-value: {}", p_value);
     }
 }

@@ -8,3 +8,4 @@ lease_cache_sim = {git = "https://github.com/Roc-Locality/lease_cache_sim.git"}
 abstract_cache = {git = "https://github.com/Roc-Locality/abstract_cache"}
 csv = "1.2.2"
 rand = "0.8.4"
+statrs = "0.17.1"
